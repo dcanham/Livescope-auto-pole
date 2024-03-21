@@ -13,8 +13,8 @@ BLEClient* pClient;
 BLERemoteCharacteristic* pReportCharacteristic;
 Servo servo;
 
-#define LEFT_LIMIT 10     // Adjust left limit (in degrees)
-#define RIGHT_LIMIT 170   // Adjust right limit (in degrees)
+#define LEFT_LIMIT 0     // Adjust left limit (in degrees)
+#define RIGHT_LIMIT 180   // Adjust right limit (in degrees)
 
 uint8_t lastButtonState = 0;   // Variable to store the last button state
 int servoPosition = 90;        // Initial servo position (in degrees)
