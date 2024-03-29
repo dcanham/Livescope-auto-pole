@@ -5,15 +5,16 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <ESP32Servo.h>
+#include <EEPROM.h>
+#include <Arduino.h>
 
-
-//Set up variables and things
+// Set up variables and things
 const char* ssid = "ESP32-AP";
 const char* password = "password";
-bool isConnected = false; // Flag to track Bluetooth connection status
+bool isConnected = false;
 bool alreadyPrinted = false;
 bool wifiOff = false;
-BLEClient* pClient; // Declare global BLEClient object
+BLEClient* pClient;
 WebServer server(80);
 BLEScan* pBLEScan;
 std::vector<BLEAdvertisedDevice> discoveredDevices;
@@ -21,12 +22,19 @@ BLEUUID HID_SERVICE_UUID;
 BLEUUID HID_REPORT_CHAR_UUID;
 #define CLIENT_CHARACTERISTIC_CONFIG_UUID "00002902-0000-1000-8000-00805f9b34fb"
 #define SERVO_PIN 16
-#define LEFT_LIMIT 0     // Adjust left limit (in degrees)
-#define RIGHT_LIMIT 180   // Adjust right limit (in degrees)
+#define LEFT_LIMIT 0
+#define RIGHT_LIMIT 180
+#define EEPROM_ADDR_START 0
+#define MAX_STRING_LENGTH 20 // Maximum length of the string to be stored in EEPROM
+#define EEPROM_SIZE 200
+
+
+
 Servo servo;
-uint8_t lastButtonState = 0;   // Variable to store the last button state
-int servoPosition = 90;        // Initial servo position (in degrees)
-bool processHIDReport = true; // Flag to indicate whether to process HID reports
+uint8_t lastButtonState = 0;
+int servoPosition = 90;
+bool processHIDReport = true;
+
 
 
 class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
@@ -35,6 +43,47 @@ public:
         discoveredDevices.push_back(advertisedDevice);
     }
 };
+
+String getLastConnectedDeviceAddress() {
+  String data = "";
+  char byteRead;
+  for (int i = 0; i < MAX_STRING_LENGTH; i++) {
+    byteRead = char(EEPROM.read(EEPROM_ADDR_START + i));
+    Serial.print("Read byte: ");
+    Serial.println(byteRead);
+    if (byteRead == '\0') {
+      break; // Stop reading if null terminator is encountered
+    }
+    data += byteRead;
+  }
+
+  // Print the read data to serial
+  Serial.println("Data read from EEPROM:");
+  Serial.println(data);
+  return data;
+}
+
+
+void writeToEEPROM(String data) {
+  int length = data.length();
+  if (length > MAX_STRING_LENGTH - 1) { // Ensure data fits within EEPROM size
+    Serial.println("Data exceeds EEPROM capacity. Truncating...");
+    length = MAX_STRING_LENGTH - 1;
+    data.substring(0, length); // Truncate data
+  }
+
+  Serial.println("Printing below to EEPROM: ");
+  Serial.println(data);
+  for (int i = 0; i < length; i++) {
+    char byteToWrite = data[i];
+    EEPROM.write(EEPROM_ADDR_START + i, byteToWrite);
+    Serial.print("Wrote byte: ");
+    Serial.println(byteToWrite);
+  }
+  EEPROM.write(EEPROM_ADDR_START + length, '\0'); // Null-terminate the string
+  EEPROM.commit(); // Commit the changes to EEPROM
+}
+
 
 void handleRoot() {
     String page = "<html><body>";
@@ -109,12 +158,6 @@ void registerForNotifications() {
     }
 }
 
-
-
-
-
-
-
 void handleConnect() {
     Serial.println("Handling connect request...");
     String addressParam = server.arg("address"); // Get the BLE device address from the URL parameter
@@ -151,6 +194,9 @@ void handleConnect() {
     if (pClient->connect(address)) {
         Serial.println("Connected to the device.");
         isConnected = true; // Set connection flag to true
+        // Save the connected device address to EEPROM
+        writeToEEPROM(addressParam);
+        Serial.println("Written to EEProm");
     } else {
         Serial.println("Failed to connect to the device.");
         server.send(500, "text/plain", "Failed to connect to the device.");
@@ -237,6 +283,7 @@ void notifyCallback(BLERemoteCharacteristic* pCharacteristic, uint8_t* pData, si
   
 }
 
+
 void setup() {
     Serial.begin(115200);
     WiFi.softAP(ssid, password);
@@ -253,7 +300,18 @@ void setup() {
     server.begin();
     // Initialize servo
     servo.attach(SERVO_PIN);
+    EEPROM.begin(EEPROM_SIZE);
+
+    //String testaddress = "00:11:22:33:44:55"; // Example Bluetooth address
+    //writeToEEPROM(testaddress);
+
+    
     Serial.println("Servo initialized.");
+    String eepromData = getLastConnectedDeviceAddress();
+    Serial.print("Last connected device address: ");
+    Serial.println(eepromData);
+
+    
 }
 
 void loop() {
