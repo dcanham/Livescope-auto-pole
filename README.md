@@ -9,6 +9,7 @@ This project is for controlling a 1 1/8" inch pole that your livescope is mounte
 - 3v to 5v step up: https://www.pololu.com/product/2562 (required as the ESP only outputs 5v if on USB power)
 - Servo: https://a.co/d/6YfNTrJ
 - 1" ram mount: https://a.co/d/4ML1X51
+- Wireless BT Remote: https://a.co/d/i9t7pQf
 - Box: Printed in PETG, files can be found 3d Printed Parts folder. 
 - Misc wires and solder
 - A 1 and 1/8 livescope pole with hole at top, I used the summit fishing pole. 
