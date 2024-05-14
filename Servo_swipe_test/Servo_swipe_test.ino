@@ -1,31 +1,83 @@
 #include <ESP32Servo.h>
 
 Servo myservo;  // create servo object to control a servo
-// 16 servo objects can be created on the ESP32
 
-int pos = 0;    // variable to store the servo position
-// Recommended PWM GPIO pins on the ESP32 include 2,4,12-19,21-23,25-27,32-33 
-int servoPin = 16; // pin 27 GPIO16
+// Update servo pin to 16
+const int servoPin = 16; // GPIO pin connected to the servo
+const int pulseMin = 1000; // Minimum pulse width in microseconds
+const int pulseMax = 2000; // Maximum pulse width in microseconds
+const int pulseMid = 1500; // Middle pulse width to represent the mid-point
 
 void setup() {
-	// Allow allocation of all timers
-	myservo.setPeriodHertz(200);    // standard 50 hz servo
-	myservo.attach(servoPin, 500, 2500); // attaches the servo on pin 18 to the servo object
-	// using default min/max of 1000us and 2000us
-	// different servos may require different min/max settings
-	// for an accurate 0 to 180 sweep
+  Serial.begin(9600); // Start serial communication at 9600 baud
+  myservo.setPeriodHertz(50);    // Standard 50Hz servo
+  myservo.attach(servoPin, pulseMin, pulseMax);  // attaches the servo on pin to the servo object
+                                                 // and defines min and max pulse widths
+  Serial.println("Servo debug started...");
 }
 
 void loop() {
+  // Move servo to the left position
+  Serial.println("Moving to min...");
+  myservo.writeMicroseconds(pulseMin);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMin);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
 
-	for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-		// in steps of 1 degree
-		myservo.write(pos);    // tell servo to go to position in variable 'pos'
-		delay(15);             // waits 15ms for the servo to reach the position
-	}
-	for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-		myservo.write(pos);    // tell servo to go to position in variable 'pos'
-		delay(15);             // waits 15ms for the servo to reach the position
-	}
-  delay(10000); //updating code for test branch
+  // Move servo to the left position
+  Serial.println("Moving to min...");
+  myservo.writeMicroseconds(pulseMin);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMin);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
+
+  // Move servo to the left position
+  Serial.println("Moving to min...");
+  myservo.writeMicroseconds(pulseMin);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMin);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
+
+
+  // Move servo to the right position
+  Serial.println("Moving to max...");
+  myservo.writeMicroseconds(pulseMax);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMax);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
+
+  // Move servo to the right position
+  Serial.println("Moving to max...");
+  myservo.writeMicroseconds(pulseMax);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMax);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
+
+  // Move servo to the right position
+  Serial.println("Moving to max...");
+  myservo.writeMicroseconds(pulseMax);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMax);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
+
+  // Move servo to the right position
+  Serial.println("Moving to max...");
+  myservo.writeMicroseconds(pulseMax);
+  Serial.print("Pulse width: ");
+  Serial.println(pulseMax);
+  delay(200);
+  myservo.writeMicroseconds(pulseMid);
+  delay(2000); // Wait for 2 seconds
 }

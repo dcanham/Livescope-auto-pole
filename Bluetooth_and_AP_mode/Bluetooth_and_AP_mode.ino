@@ -16,6 +16,10 @@ bool alreadyPrinted = false;
 bool wifiOff = false;
 bool firstBoot = true;
 bool addressEmpty = false;
+const int servoPin = 22; // GPIO pin connected to the servo
+const int pulseMin = 1250; // Minimum pulse width in microseconds
+const int pulseMax = 1750; // Maximum pulse width in microseconds
+const int pulseMid = 1500; // Middle pulse width to represent the mid-point
 BLEClient* pClient;
 WebServer server(80);
 BLEScan* pBLEScan;
@@ -31,7 +35,7 @@ BLEUUID HID_REPORT_CHAR_UUID;
 #define EEPROM_SIZE 200
 
 
-
+Servo myservo;
 Servo servo;
 uint8_t lastButtonState = 0;
 int servoPosition = 90;
@@ -323,24 +327,14 @@ void notifyCallback(BLERemoteCharacteristic* pCharacteristic, uint8_t* pData, si
       if (length >= 2) {
         if (pData[0] == 0xEA && pData[1] == 0x00) {  // Volume down button
           Serial.println("Volume down button pressed. Moving servo left.");
-          if (servoPosition > LEFT_LIMIT) {
-            servoPosition -= 10;  // Decrease servo position by 10 degrees
-            servo.write(servoPosition);
-          } else {
-            // Flip around to the other side
-            servoPosition = RIGHT_LIMIT;
-            servo.write(servoPosition);
-          }
+          myservo.writeMicroseconds(pulseMin);
+          delay(200);
+          myservo.writeMicroseconds(pulseMid);
         } else if (pData[0] == 0xE9 && pData[1] == 0x00) {  // Volume up button
           Serial.println("Volume up button pressed. Moving servo right.");
-          if (servoPosition < RIGHT_LIMIT) {
-            servoPosition += 10;  // Increase servo position by 10 degrees
-            servo.write(servoPosition);
-          } else {
-            // Flip around to the other side
-            servoPosition = LEFT_LIMIT;
-            servo.write(servoPosition);
-          }
+          myservo.writeMicroseconds(pulseMax);
+          delay(200);
+          myservo.writeMicroseconds(pulseMid);
         }
       }
       processHIDReport = false;  // Set flag to skip processing subsequent HID reports until a terminating report is received
@@ -372,7 +366,11 @@ void setup() {
   server.on("/connect", HTTP_GET, handleConnect);
   server.begin();
   // Initialize servo
-  servo.attach(SERVO_PIN);
+
+  myservo.setPeriodHertz(50);    // Standard 50Hz servo
+  myservo.attach(servoPin, pulseMin, pulseMax);  // attaches the servo on pin to the servo object
+                                                 // and defines min and max pulse widths
+  //servo.attach(SERVO_PIN);
   EEPROM.begin(EEPROM_SIZE);
 
   //String testaddress = "00:11:22:33:44:55"; // Example Bluetooth address
